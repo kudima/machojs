@@ -11,6 +11,8 @@ process address space and returns an instance of Uint8Array containing the data 
 data --- contains the macho file header data as Uint8Array for one of the dynamic libraries
 mapped into current process address space.
 
+aslrSlide --- aslr slide applied to the library (dyld cache in case of ios).
+
 The following code resolves a symbol "dlsym" exported by that library.
 
 ```javascript
