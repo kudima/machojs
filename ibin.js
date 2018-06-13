@@ -1,3 +1,18 @@
+function hexdump(u8) {
+	var out = '';
+	for (var i=0; i<u8.length; i++) {
+		if (u8[i] < 0x10) {
+			out += '0';
+		}
+		out += u8[i].toString(16) + ' ';
+		if (((i+1) % 8) == 0) {
+			out += "\n";
+		}
+	}
+	return out;
+}
+
+
 function Bin_Excpetion (message) {
 	this.message = message;
 	this.stack = (new Error()).stack;
@@ -80,7 +95,7 @@ BinHelper.prototype.toF64 = function (hi, lo) {
 BinHelper.prototype.toF64JSValue = function (hi, lo) {
 
 	if (hi < 0x10000) {
-		throw new Bin_Excpetion("toF64JSValue failed hi < 0x10000");
+		throw new Bin_Excpetion("toF64JSValue failed hi < 0x10000 " + hi.toString(16));
 	}
 
 	this.u32[1] = hi - 0x10000;
@@ -160,9 +175,15 @@ BinHelper.prototype.uint8ArrayToStr = function (uint8Array) {
 		return String.fromCharCode(...arr);
 }
 
-BinHelper.prototype.f64ToUint8Array = function (f64) {
+BinHelper.prototype.f64ToUint8Array = function (f64, maxLength=8) {
+
 	this.f64[0] = f64;
-	return new Uint8Array(this.buf);
+
+	var bytes = new Uint8Array(maxLength);
+	for (let i=0; i<maxLength; i++) 
+		bytes[i] = this.u8[i];
+
+	return bytes;
 }
 
 BinHelper.prototype.f64AddU32 = function(f64, offset) {
@@ -280,6 +301,24 @@ BinHelper.prototype.f64Xor = function (f1, f2) {
 
 	return binHelper.toF64(hi1 ^ hi2, lo1 ^ lo2);
 }
+
+BinHelper.prototype.f64XorU8Arr = function (f64, arr) {
+
+	this.f64[0] = f64;
+	for (var i=0; i<Math.min(arr.length, 8); i++) 
+		this.u8[i] = this.u8[i] ^ arr[i];
+
+	this.assertNaN();
+	return this.f64[0];
+}
+
+BinHelper.prototype.U8ArrXorU8Arr = function (arr1, arr2) {
+
+	for (var i=0; i<Math.min(arr1.length, arr2.length); i++) 
+		arr1[i] = arr1[i] ^ arr2[i];
+}
+
+
 
 let binHelper = new BinHelper();
 
